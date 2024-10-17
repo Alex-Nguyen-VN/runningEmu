@@ -1,9 +1,9 @@
 describe("new_un_cpp",{
   it("should calculate the average of the sum of row averages and column averages in a square matrix", {
     m <- matrix(seq(9),nrow=3)
-    expect_equal(10, new_un_cpp(m))
+    expect_equal(10, un_ccp_new(m))
     m <- matrix(seq(16),nrow=4)
-    expect_equal(17, new_un_cpp(m))
+    expect_equal(17, un_ccp_new(m))
   })
 })
 

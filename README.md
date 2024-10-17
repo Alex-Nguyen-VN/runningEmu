@@ -11,34 +11,23 @@ library(Rcpp)
 ```
 
 ``` r
-Rcpp::cppFunction('double un(NumericMatrix m) {
-  int n = m.nrow();  // Number of rows
-  int p = m.ncol();  // Number of columns
-  NumericVector row_means(n);
-  NumericVector col_means(p);
-  
-  // Calculate row means
+cppFunction('double un_ccp_new(NumericMatrix m) {
+  int n = m.nrow();        // Number of rows
+  int p = m.ncol();        // Number of columns
+  double sum_col = 0;      // Initialize column sum
+  double sum_row = 0;      // Initialize row sum
+
   for (int i = 0; i < n; i++) {
-    double row_sum = 0;
-    for (int j = 0; j < p; j++) {
-      row_sum += m(i, j);
-    }
-    row_means[i] = row_sum / p;
+    // Sum over each row
+    sum_row += std::accumulate(m(i, _).begin(), m(i, _).end(), 0.0) / p;
   }
 
-  // Calculate column means
   for (int j = 0; j < p; j++) {
-    double col_sum = 0;
-    for (int i = 0; i < n; i++) {
-      col_sum += m(i, j);
-    }
-    col_means[j] = col_sum / n;
+    // Sum over each column
+    sum_col += std::accumulate(m(_, j).begin(), m(_, j).end(), 0.0) / n;
   }
 
-  // Calculate the mean of row means + column means
-  double overall_mean = mean(row_means + col_means);
-  
-  return overall_mean;
+  return (sum_col + sum_row)/n;
 }')
 
 
@@ -92,37 +81,37 @@ Below are the runtimes for one evaluation of these functions
 ``` r
 bigM <- 1e6
 m <- matrix(rnorm(bigM), nrow=as.integer(sqrt(bigM)))
-bench::system_time(un(m))
+bench::system_time(un_ccp_new(m))
 #> process    real 
-#>       0  4.04ms
+#>       0  2.29ms
 v <- sample(1:10, bigM, replace=TRUE)
 bench::system_time(deux(v))
-#>  process     real 
-#> 703.12ms    1.06s
+#> process    real 
+#>   656ms   708ms
 vv <- sample(1:10, bigM, replace=TRUE, prob=sample(seq(0.1,0.9,by=0.1), 10, replace = TRUE))
 bench::system_time(trois(vv))
 #> process    real 
-#>       0  7.75ms
+#> 15.62ms  3.22ms
 ```
 
 And here are the runtimes for 50 evaluations of these functions.
 
 ``` r
-bench::mark(un(m), iterations = 10)
+bench::mark(un_ccp_new(m), iterations = 10)
 #> # A tibble: 1 × 6
-#>   expression      min   median `itr/sec` mem_alloc `gc/sec`
-#>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 un(m)         4.5ms   5.58ms      181.    41.8KB        0
+#>   expression         min   median `itr/sec` mem_alloc `gc/sec`
+#>   <bch:expr>    <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
+#> 1 un_ccp_new(m)   1.89ms    1.9ms      515.    18.2KB        0
 bench::mark(deux(v), iterations = 10)
 #> Warning: Some expressions had a GC in every iteration; so filtering is
 #> disabled.
 #> # A tibble: 1 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 deux(v)       883ms    1.06s     0.944    6.62KB     11.0
+#> 1 deux(v)       702ms    794ms      1.26    6.62KB     24.5
 bench::mark(trois(vv), iterations = 10)
 #> # A tibble: 1 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 trois(vv)    5.38ms   5.74ms      146.    6.62KB        0
+#> 1 trois(vv)    3.06ms   3.07ms      325.    6.62KB        0
 ```

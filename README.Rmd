@@ -25,34 +25,23 @@ library(Rcpp)
 
 
 ```{r}
-Rcpp::cppFunction('double un(NumericMatrix m) {
-  int n = m.nrow();  // Number of rows
-  int p = m.ncol();  // Number of columns
-  NumericVector row_means(n);
-  NumericVector col_means(p);
-  
-  // Calculate row means
+cppFunction('double un_ccp_new(NumericMatrix m) {
+  int n = m.nrow();        // Number of rows
+  int p = m.ncol();        // Number of columns
+  double sum_col = 0;      // Initialize column sum
+  double sum_row = 0;      // Initialize row sum
+
   for (int i = 0; i < n; i++) {
-    double row_sum = 0;
-    for (int j = 0; j < p; j++) {
-      row_sum += m(i, j);
-    }
-    row_means[i] = row_sum / p;
+    // Sum over each row
+    sum_row += std::accumulate(m(i, _).begin(), m(i, _).end(), 0.0) / p;
   }
 
-  // Calculate column means
   for (int j = 0; j < p; j++) {
-    double col_sum = 0;
-    for (int i = 0; i < n; i++) {
-      col_sum += m(i, j);
-    }
-    col_means[j] = col_sum / n;
+    // Sum over each column
+    sum_col += std::accumulate(m(_, j).begin(), m(_, j).end(), 0.0) / n;
   }
 
-  // Calculate the mean of row means + column means
-  double overall_mean = mean(row_means + col_means);
-  
-  return overall_mean;
+  return (sum_col + sum_row)/n;
 }')
 
 
@@ -106,7 +95,7 @@ Below are the runtimes for one evaluation of these functions
 ```{r}
 bigM <- 1e6
 m <- matrix(rnorm(bigM), nrow=as.integer(sqrt(bigM)))
-bench::system_time(un(m))
+bench::system_time(un_ccp_new(m))
 v <- sample(1:10, bigM, replace=TRUE)
 bench::system_time(deux(v))
 vv <- sample(1:10, bigM, replace=TRUE, prob=sample(seq(0.1,0.9,by=0.1), 10, replace = TRUE))
@@ -116,7 +105,8 @@ bench::system_time(trois(vv))
 And here are the runtimes for 50 evaluations of these functions.
 
 ```{r}
-bench::mark(un(m), iterations = 10)
+bench::mark(un_ccp_new(m), iterations = 10)
 bench::mark(deux(v), iterations = 10)
 bench::mark(trois(vv), iterations = 10)
 ```
+
