@@ -11,13 +11,14 @@
 
 un <- Rcpp::cppFunction('double un(NumericMatrix m) {
   int n = m.nrow();
+  int p = m.ncol();  // Number of columns
   double sum = 0;
   for (int i = 0; i < n; i++) {
     double row_mean = 0;
-    for (int j = 0; j < n; j++) {
+    for (int j = 0; j < p; j++) {
       row_mean += m(i, j);
     }
-    sum += row_mean / n;
+    sum += row_mean / p;  // Divide by number of columns
   }
   return sum;
 }')
@@ -30,7 +31,12 @@ un <- Rcpp::cppFunction('double un(NumericMatrix m) {
 #' @param vec Numerical vector with no missing values
 #' @return A numerical vector containing the longest continuous increasing subset
 #' @export
-deux <-  Rcpp::cppFunction('IntegerVector deux(IntegerVector vec) {
+
+Rcpp::cppFunction('IntegerVector deux(IntegerVector vec) {
+  if (vec.size() == 0) {
+    return IntegerVector();  // Return an empty vector if input is empty
+  }
+
   IntegerVector longest_seq;
   IntegerVector current_seq;
   
@@ -62,10 +68,12 @@ deux <-  Rcpp::cppFunction('IntegerVector deux(IntegerVector vec) {
 #' @return A single numerical vector with counts of each unique element
 #'
 #' @export
-trois <-  Rcpp::cppFunction('IntegerVector trois(IntegerVector vec) {
-  IntegerVector out(10);
+Rcpp::cppFunction('IntegerVector trois(IntegerVector vec) {
+  IntegerVector out(10);  // Vector to store counts for numbers 1 to 10
   for (int i = 0; i < vec.size(); i++) {
-    out[vec[i] - 1]++;
+    if (vec[i] >= 1 && vec[i] <= 10) {  // Check if the number is within 1-10
+      out[vec[i] - 1]++;
+    }
   }
   return out;
 }')
