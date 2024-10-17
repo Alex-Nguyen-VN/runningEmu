@@ -6,8 +6,10 @@ Authors@R:
 Description: An example package used to demonstrate optimizing function performance in R.
 License: MIT + file LICENSE
 Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
+Roxygen: list(markdown = TRUE)s
 RoxygenNote: 7.3.2
+Imports: 
+    Rcpp
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
