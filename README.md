@@ -41,6 +41,7 @@ Rcpp::cppFunction('double un(NumericMatrix m) {
   return overall_mean;
 }')
 
+
 Rcpp::cppFunction('IntegerVector deux(IntegerVector vec) {
   if (vec.size() == 0) {
     return IntegerVector();  // Return an empty vector if input is empty
@@ -93,15 +94,15 @@ bigM <- 1e6
 m <- matrix(rnorm(bigM), nrow=as.integer(sqrt(bigM)))
 bench::system_time(un(m))
 #> process    real 
-#>       0   3.6ms
+#>       0  4.04ms
 v <- sample(1:10, bigM, replace=TRUE)
 bench::system_time(deux(v))
 #>  process     real 
-#> 593.75ms    1.02s
+#> 703.12ms    1.06s
 vv <- sample(1:10, bigM, replace=TRUE, prob=sample(seq(0.1,0.9,by=0.1), 10, replace = TRUE))
 bench::system_time(trois(vv))
 #> process    real 
-#>       0  10.1ms
+#>       0  7.75ms
 ```
 
 And here are the runtimes for 50 evaluations of these functions.
@@ -111,17 +112,17 @@ bench::mark(un(m), iterations = 10)
 #> # A tibble: 1 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 un(m)         3.3ms   3.57ms      265.    41.8KB        0
+#> 1 un(m)         4.5ms   5.58ms      181.    41.8KB        0
 bench::mark(deux(v), iterations = 10)
 #> Warning: Some expressions had a GC in every iteration; so filtering is
 #> disabled.
 #> # A tibble: 1 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 deux(v)       1.14s    1.26s     0.799    6.62KB     15.6
+#> 1 deux(v)       883ms    1.06s     0.944    6.62KB     11.0
 bench::mark(trois(vv), iterations = 10)
 #> # A tibble: 1 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 trois(vv)    5.35ms   6.79ms      129.    6.62KB        0
+#> 1 trois(vv)    5.38ms   5.74ms      146.    6.62KB        0
 ```

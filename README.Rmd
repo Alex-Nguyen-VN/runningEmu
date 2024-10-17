@@ -55,6 +55,7 @@ Rcpp::cppFunction('double un(NumericMatrix m) {
   return overall_mean;
 }')
 
+
 Rcpp::cppFunction('IntegerVector deux(IntegerVector vec) {
   if (vec.size() == 0) {
     return IntegerVector();  // Return an empty vector if input is empty
