@@ -9,21 +9,35 @@
 #' un(m)
 #' @export
 
-un <- Rcpp::cppFunction('double un(NumericMatrix m) {
-  int n = m.nrow();
+Rcpp::cppFunction('double un(NumericMatrix m) {
+  int n = m.nrow();  // Number of rows
   int p = m.ncol();  // Number of columns
-  double sum = 0;
+  NumericVector row_means(n);
+  NumericVector col_means(p);
+  
+  // Calculate row means
   for (int i = 0; i < n; i++) {
-    double row_mean = 0;
+    double row_sum = 0;
     for (int j = 0; j < p; j++) {
-      row_mean += m(i, j);
+      row_sum += m(i, j);
     }
-    sum += row_mean / p;  // Divide by number of columns
+    row_means[i] = row_sum / p;
   }
-  return sum;
+
+  // Calculate column means
+  for (int j = 0; j < p; j++) {
+    double col_sum = 0;
+    for (int i = 0; i < n; i++) {
+      col_sum += m(i, j);
+    }
+    col_means[j] = col_sum / n;
+  }
+
+  // Calculate the mean of row means + column means
+  double overall_mean = mean(row_means + col_means);
+  
+  return overall_mean;
 }')
-
-
 #' @title Second
 #' @description
 #' Given a vector gives the longest continuous increasing subset

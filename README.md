@@ -12,17 +12,33 @@ library(Rcpp)
 
 ``` r
 Rcpp::cppFunction('double un(NumericMatrix m) {
-  int n = m.nrow();
+  int n = m.nrow();  // Number of rows
   int p = m.ncol();  // Number of columns
-  double sum = 0;
+  NumericVector row_means(n);
+  NumericVector col_means(p);
+  
+  // Calculate row means
   for (int i = 0; i < n; i++) {
-    double row_mean = 0;
+    double row_sum = 0;
     for (int j = 0; j < p; j++) {
-      row_mean += m(i, j);
+      row_sum += m(i, j);
     }
-    sum += row_mean / p;  // Divide by number of columns
+    row_means[i] = row_sum / p;
   }
-  return sum;
+
+  // Calculate column means
+  for (int j = 0; j < p; j++) {
+    double col_sum = 0;
+    for (int i = 0; i < n; i++) {
+      col_sum += m(i, j);
+    }
+    col_means[j] = col_sum / n;
+  }
+
+  // Calculate the mean of row means + column means
+  double overall_mean = mean(row_means + col_means);
+  
+  return overall_mean;
 }')
 
 Rcpp::cppFunction('IntegerVector deux(IntegerVector vec) {
@@ -77,15 +93,15 @@ bigM <- 1e6
 m <- matrix(rnorm(bigM), nrow=as.integer(sqrt(bigM)))
 bench::system_time(un(m))
 #> process    real 
-#>       0  1.46ms
+#>       0   3.6ms
 v <- sample(1:10, bigM, replace=TRUE)
 bench::system_time(deux(v))
-#> process    real 
-#>   625ms   723ms
+#>  process     real 
+#> 593.75ms    1.02s
 vv <- sample(1:10, bigM, replace=TRUE, prob=sample(seq(0.1,0.9,by=0.1), 10, replace = TRUE))
 bench::system_time(trois(vv))
 #> process    real 
-#> 15.62ms  3.24ms
+#>       0  10.1ms
 ```
 
 And here are the runtimes for 50 evaluations of these functions.
@@ -95,17 +111,17 @@ bench::mark(un(m), iterations = 10)
 #> # A tibble: 1 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 un(m)         956µs    992µs      950.    18.2KB        0
+#> 1 un(m)         3.3ms   3.57ms      265.    41.8KB        0
 bench::mark(deux(v), iterations = 10)
 #> Warning: Some expressions had a GC in every iteration; so filtering is
 #> disabled.
 #> # A tibble: 1 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 deux(v)       732ms    849ms      1.18    6.62KB     23.6
+#> 1 deux(v)       1.14s    1.26s     0.799    6.62KB     15.6
 bench::mark(trois(vv), iterations = 10)
 #> # A tibble: 1 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 trois(vv)    3.07ms   3.08ms      324.    6.62KB        0
+#> 1 trois(vv)    5.35ms   6.79ms      129.    6.62KB        0
 ```

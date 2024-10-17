@@ -1,9 +1,9 @@
-describe("un",{
+describe("new_un_cpp",{
   it("should calculate the average of the sum of row averages and column averages in a square matrix", {
     m <- matrix(seq(9),nrow=3)
-    expect_equal(10, un(m))
+    expect_equal(10, new_un_cpp(m))
     m <- matrix(seq(16),nrow=4)
-    expect_equal(17, un(m))
+    expect_equal(17, new_un_cpp(m))
   })
 })
 
@@ -24,3 +24,12 @@ describe("trois", {
     expect_equal(trois(vec), table(vec))
   })
 })
+
+m <- matrix(seq(9),nrow=3)
+old_un <- function(m) {
+  mean(apply(m,1,mean) + apply(m,2,mean))
+}
+
+old_un(m)
+
+un_cpp_corrected <- 
