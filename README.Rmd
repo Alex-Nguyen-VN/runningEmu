@@ -19,8 +19,49 @@ knitr::opts_chunk$set(
 <!-- badges: end -->
 
 ```{r}
-library(runningEmu)
+Rcpp::cppFunction('double un(NumericMatrix m) {
+  int n = m.nrow();
+  double sum = 0;
+  for (int i = 0; i < n; i++) {
+    double row_mean = 0;
+    for (int j = 0; j < n; j++) {
+      row_mean += m(i, j);
+    }
+    sum += row_mean / n;
+  }
+  return sum;
+}')
+Rcpp::cppFunction('IntegerVector deux(IntegerVector vec) {
+  IntegerVector longest_seq;
+  IntegerVector current_seq;
+  
+  for (int i = 0; i < vec.size(); i++) {
+    if (i == 0 || vec[i] > vec[i - 1]) {
+      current_seq.push_back(vec[i]);
+    } else {
+      if (current_seq.size() > longest_seq.size()) {
+        longest_seq = current_seq;
+      }
+      current_seq = IntegerVector();
+      current_seq.push_back(vec[i]);
+    }
+  }
+  
+  if (current_seq.size() > longest_seq.size()) {
+    longest_seq = current_seq;
+  }
+  
+  return longest_seq;
+}')
+Rcpp::cppFunction('IntegerVector trois(IntegerVector vec) {
+  IntegerVector out(10);
+  for (int i = 0; i < vec.size(); i++) {
+    out[vec[i] - 1]++;
+  }
+  return out;
+}')
 ```
+
 
 The goal of runningEmu is to create an environment for a Hacky Hour competition
 

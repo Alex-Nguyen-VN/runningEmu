@@ -9,7 +9,7 @@
 #' un(m)
 #' @export
 
-un <- Rcpp::cppFunction('double un_ccp(NumericMatrix m) {
+un <- Rcpp::cppFunction('double un(NumericMatrix m) {
   int n = m.nrow();
   double sum = 0;
   for (int i = 0; i < n; i++) {
@@ -30,7 +30,7 @@ un <- Rcpp::cppFunction('double un_ccp(NumericMatrix m) {
 #' @param vec Numerical vector with no missing values
 #' @return A numerical vector containing the longest continuous increasing subset
 #' @export
-deux <-  Rcpp::cppFunction('IntegerVector deux_ccp(IntegerVector vec) {
+deux <-  Rcpp::cppFunction('IntegerVector deux(IntegerVector vec) {
   IntegerVector longest_seq;
   IntegerVector current_seq;
   
@@ -62,7 +62,7 @@ deux <-  Rcpp::cppFunction('IntegerVector deux_ccp(IntegerVector vec) {
 #' @return A single numerical vector with counts of each unique element
 #'
 #' @export
-trois <-  Rcpp::cppFunction('IntegerVector trois_ccp(IntegerVector vec) {
+trois <-  Rcpp::cppFunction('IntegerVector trois(IntegerVector vec) {
   IntegerVector out(10);
   for (int i = 0; i < vec.size(); i++) {
     out[vec[i] - 1]++;
